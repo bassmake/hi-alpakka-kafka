@@ -10,24 +10,27 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 
 class EmbeddedSpec extends WordSpec with Matchers with EmbeddedKafka {
+
+  implicit val system: ActorSystem = ActorSystem("QuickStart")
+  implicit val materializer: ActorMaterializer = ActorMaterializer()
+
   "runs with embedded kafka" should {
 
     "work" in {
 
       val userDefinedConfig = EmbeddedKafkaConfig(kafkaPort = 0, zooKeeperPort = 0)
 
-      implicit val system: ActorSystem = ActorSystem("QuickStart")
-      implicit val materializer: ActorMaterializer = ActorMaterializer()
+      withRunningKafkaOnFoundPort(userDefinedConfig) { implicit actualConfig =>
+        val topic = "test-topic"
+        val producer = new SimpleProducer(
+          s"http://localhost:${actualConfig.kafkaPort}",
+          topic
+        )
+        val done = producer.run()
 
-      val producer = new SimpleProducer(
-        s"http://localhost:${userDefinedConfig.kafkaPort}",
-        "test-topic"
-      )
-
-      val done = producer.run()
-
-      Await.result(done, 5.seconds) should be(Done)
-
+        Await.result(done, 5.seconds) should be(Done)
+        consumeFirstStringMessageFrom(topic) shouldBe "1"
+      }
     }
   }
 }
