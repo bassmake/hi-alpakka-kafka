@@ -1,5 +1,7 @@
 package sk.bsmk.hi
 
+import java.util.UUID
+
 import akka.Done
 import akka.actor.ActorSystem
 import akka.kafka.ProducerSettings
@@ -11,7 +13,7 @@ import org.apache.kafka.common.serialization.StringSerializer
 
 import scala.concurrent.Future
 
-class SimpleProducer(bootstrapServers: String, topic: String)(
+class TransactionAvroProducer(bootstrapServers: String, topic: String)(
     implicit val system: ActorSystem,
     implicit val materializer: Materializer
 ) {
@@ -24,8 +26,8 @@ class SimpleProducer(bootstrapServers: String, topic: String)(
 
   def run(): Future[Done] =
     Source(1 to 100)
-      .map(_.toString)
-      .map(value => new ProducerRecord[String, String](topic, value))
-      .runWith(Producer.plainSink(producerSettings))
+      .map(amount => MonetaryTransaction(UUID.randomUUID().toString, "ECommerce", amount.toDouble, "EUR"))
+      .map(value => new ProducerRecord[String, MonetaryTransaction](topic, value))
+      .runWith(???)
 
 }

@@ -9,7 +9,7 @@ import org.scalatest.{Matchers, WordSpec}
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-class EmbeddedSpec extends WordSpec with Matchers with EmbeddedKafka {
+class CountingProducerSpec extends WordSpec with Matchers with EmbeddedKafka {
 
   implicit val system: ActorSystem = ActorSystem("QuickStart")
   implicit val materializer: ActorMaterializer = ActorMaterializer()
@@ -22,7 +22,7 @@ class EmbeddedSpec extends WordSpec with Matchers with EmbeddedKafka {
 
       withRunningKafkaOnFoundPort(userDefinedConfig) { implicit actualConfig =>
         val topic = "test-topic"
-        val producer = new SimpleProducer(
+        val producer = new CountingProducer(
           s"http://localhost:${actualConfig.kafkaPort}",
           topic
         )
