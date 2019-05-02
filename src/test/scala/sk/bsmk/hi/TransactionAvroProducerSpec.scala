@@ -18,13 +18,13 @@ class TransactionAvroProducerSpec extends WordSpec with Matchers with EmbeddedKa
 
     "work" in {
 
-      implicit val config: EmbeddedKafkaConfig = EmbeddedKafkaConfig()
+      implicit val config: EmbeddedKafkaConfig = EmbeddedKafkaConfig(kafkaPort = 0, zooKeeperPort = 0, schemaRegistryPort = 0)
 
-      withRunningKafka {
+      withRunningKafkaOnFoundPort(config) { actualConfig =>
         val topic = "test-topic"
         val producer = new TransactionAvroProducer(
-          s"http://localhost:${config.kafkaPort}",
-          s"http://localhost:${config.schemaRegistryPort}",
+          s"http://localhost:${actualConfig.kafkaPort}",
+          s"http://localhost:${actualConfig.schemaRegistryPort}",
           topic
         )
         val done = producer.run()
